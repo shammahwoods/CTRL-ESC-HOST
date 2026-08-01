@@ -6,7 +6,7 @@
     <title>SkyLine Premium Kiosk</title>
     <style>
         /* --- GLOBAL & FONTS --- */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap');
+        /* System font stack keeps the kiosk fast and reliable without external assets. */
 
         :root {
             /* Kiosk Theme: "Midnight & Gold" */
@@ -399,6 +399,1484 @@
         }
 
     </style>
+
+
+    <style id="enhanced-demo-styles">
+        :root {
+            --k-accent-bright: #e7d7a6;
+            --k-panel: rgba(30, 41, 59, 0.76);
+            --k-panel-strong: rgba(15, 23, 42, 0.92);
+            --k-line: rgba(255, 255, 255, 0.11);
+            --k-info: #38bdf8;
+            --k-warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            pointer-events: none;
+            inset: 0;
+        }
+
+        body::before {
+            background:
+                linear-gradient(115deg, transparent 0 43%, rgba(255,255,255,0.018) 43% 44%, transparent 44% 100%),
+                repeating-linear-gradient(90deg, transparent 0 120px, rgba(255,255,255,0.015) 120px 121px),
+                linear-gradient(180deg, rgba(15,23,42,0.2), rgba(2,6,23,0.8));
+        }
+
+        body::after {
+            inset: auto 8vw 0;
+            height: 13vh;
+            background: radial-gradient(ellipse at center, rgba(192,178,131,0.12), transparent 70%);
+            filter: blur(28px);
+        }
+
+        .kiosk-frame {
+            width: min(1240px, 96vw);
+            max-width: 1240px;
+            height: min(920px, 95vh);
+            border-radius: 28px;
+            background:
+                radial-gradient(circle at 82% 8%, rgba(56,189,248,0.08), transparent 24%),
+                radial-gradient(circle at 8% 92%, rgba(192,178,131,0.09), transparent 28%),
+                var(--k-bg);
+            isolation: isolate;
+        }
+
+        .kiosk-frame::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+            background-size: 36px 36px;
+            opacity: 0.65;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header.kiosk-header {
+            padding: 18px 32px;
+            min-height: 84px;
+            background: rgba(2, 6, 23, 0.42);
+            backdrop-filter: blur(18px);
+        }
+
+        .header-left,
+        .header-right {
+            min-width: 235px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-right { justify-content: flex-end; }
+
+        .brand { text-align: center; }
+
+        .assist-btn,
+        .utility-btn,
+        .small-action {
+            min-height: 44px;
+            border-radius: 10px;
+        }
+
+        button, [onclick] { -webkit-tap-highlight-color: transparent; }
+
+        button:focus-visible,
+        [onclick]:focus-visible,
+        input:focus-visible {
+            outline: 3px solid var(--k-info);
+            outline-offset: 3px;
+        }
+
+        .utility-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 9px 12px;
+            background: rgba(255,255,255,0.045);
+            color: var(--k-text-muted);
+            border: 1px solid rgba(255,255,255,0.12);
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.74rem;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+            transition: 0.2s ease;
+        }
+
+        .utility-btn:hover { color: white; border-color: var(--k-accent); background: rgba(192,178,131,0.09); }
+
+        .kiosk-utility-bar {
+            padding: 8px 32px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 16px;
+            background: rgba(15,23,42,0.72);
+            border-bottom: 1px solid var(--k-line);
+            color: var(--k-text-muted);
+            font-size: 0.75rem;
+            letter-spacing: 0.7px;
+            flex-shrink: 0;
+        }
+
+        .utility-left, .utility-right { display: flex; align-items: center; gap: 14px; }
+        .utility-right { justify-content: flex-end; }
+        .utility-center { color: white; font-variant-numeric: tabular-nums; }
+        .status-dot { width: 8px; height: 8px; display: inline-block; border-radius: 50%; margin-right: 6px; background: var(--k-success); box-shadow: 0 0 12px rgba(16,185,129,0.7); }
+        .flight-status-text { color: #86efac; font-weight: 600; }
+
+        .progress-rail {
+            height: 34px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-bottom: 1px solid var(--k-line);
+            background: rgba(2,6,23,0.28);
+            flex-shrink: 0;
+        }
+
+        .progress-step {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.68rem;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
+            transition: 0.25s ease;
+        }
+
+        .progress-step::after {
+            content: "";
+            position: absolute;
+            left: 12%; right: 12%; bottom: 0;
+            height: 2px;
+            background: transparent;
+        }
+
+        .progress-step.active { color: white; }
+        .progress-step.active::after { background: var(--k-accent); box-shadow: 0 0 12px rgba(192,178,131,0.5); }
+        .progress-step.complete { color: #86efac; }
+        .step-number { width: 18px; height: 18px; border: 1px solid currentColor; border-radius: 50%; display: inline-grid; place-items: center; font-size: 0.62rem; }
+
+        .screen {
+            padding: 28px 36px 32px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(192,178,131,0.35) transparent;
+        }
+
+        .screen::-webkit-scrollbar { width: 7px; }
+        .screen::-webkit-scrollbar-thumb { background: rgba(192,178,131,0.32); border-radius: 10px; }
+
+        #screen-id { justify-content: flex-start; }
+        #screen-id > h2,
+        #screen-id > p.subtitle,
+        #screen-id > .flight-overview,
+        #screen-id > .ticket-input-container,
+        #screen-id > .entry-actions,
+        #screen-id > .validation-hint { flex-shrink: 0; }
+
+        /* The original QR prompt remains in the source; the enhanced action row presents it once visually. */
+        #screen-id > div[style*="margin-top: 20px"] { display: none; }
+
+        .eyebrow {
+            color: var(--k-accent);
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            font-size: 0.68rem;
+            font-weight: 600;
+        }
+
+        .flight-overview {
+            width: min(100%, 940px);
+            display: grid;
+            grid-template-columns: 1.15fr 1.7fr 1fr;
+            gap: 1px;
+            margin: 6px 0 22px;
+            background: var(--k-line);
+            border: 1px solid var(--k-line);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 14px 36px rgba(0,0,0,0.18);
+        }
+
+        .overview-cell {
+            background: linear-gradient(145deg, rgba(30,41,59,0.94), rgba(15,23,42,0.92));
+            padding: 15px 18px;
+            min-height: 84px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .overview-label { color: var(--k-text-muted); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 1.3px; margin-bottom: 7px; }
+        .overview-value { color: white; font-size: 1rem; font-weight: 600; }
+        .route-line { display: flex; align-items: center; gap: 13px; }
+        .airport-code { font-size: 1.65rem; font-weight: 600; letter-spacing: 1px; }
+        .route-track { flex: 1; height: 1px; background: linear-gradient(90deg, var(--k-accent), rgba(192,178,131,0.18)); position: relative; }
+        .route-track::after { content: "✈"; position: absolute; right: 42%; top: 50%; transform: translate(50%,-55%); color: var(--k-accent-bright); font-size: 1rem; }
+        .tiny-note { color: var(--k-text-muted); font-size: 0.73rem; margin-top: 5px; }
+
+        .ticket-input-container {
+            gap: 14px;
+            padding: 18px 28px;
+            border-radius: 18px;
+            background: rgba(15,23,42,0.36);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        input.ticket-display {
+            width: 360px;
+            font-size: 2.45rem;
+            padding: 0 0 8px 14px;
+            border-bottom-color: rgba(231,215,166,0.8);
+            caret-color: transparent;
+        }
+
+        .numpad { gap: 10px; }
+        .num-btn { width: 58px; height: 58px; font-size: 1.2rem; background: rgba(255,255,255,0.045); }
+
+        .entry-actions {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: var(--k-text-muted);
+            font-size: 0.8rem;
+        }
+
+        .small-action {
+            padding: 10px 16px;
+            border: 1px solid rgba(255,255,255,0.14);
+            color: white;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            font: inherit;
+            transition: 0.2s ease;
+        }
+        .small-action:hover { border-color: var(--k-accent); background: rgba(192,178,131,0.1); }
+        .small-action.gold { background: rgba(192,178,131,0.13); border-color: rgba(192,178,131,0.5); color: var(--k-accent-bright); }
+
+        .journey-summary {
+            width: min(100%, 1080px);
+            display: grid;
+            grid-template-columns: 1.5fr repeat(4, minmax(95px, 1fr));
+            border: 1px solid var(--k-line);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 4px 0 18px;
+            background: rgba(2,6,23,0.2);
+        }
+        .journey-summary > div { padding: 12px 14px; border-right: 1px solid var(--k-line); }
+        .journey-summary > div:last-child { border-right: 0; }
+        .summary-route { display: flex; align-items: center; gap: 10px; }
+        .summary-route strong { font-size: 1.15rem; }
+        .summary-arrow { color: var(--k-accent); }
+        .metric-label { display: block; font-size: 0.63rem; letter-spacing: 1.1px; text-transform: uppercase; color: var(--k-text-muted); margin-bottom: 5px; }
+        .metric-value { color: white; font-size: 0.88rem; font-weight: 600; }
+
+        .options-grid {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1080px;
+            gap: 12px;
+        }
+        .option-card { min-height: 142px; padding: 18px 16px; justify-content: center; }
+        .option-card svg { width: 34px; height: 34px; margin-bottom: 10px; }
+        .option-card h3 { font-size: 1.05rem; }
+        .option-card span { font-size: 0.78rem; }
+        .option-card.selected { border-color: rgba(16,185,129,0.75); background: linear-gradient(145deg, rgba(16,185,129,0.14), rgba(15,23,42,0.92)); }
+        .option-card .service-price { position: absolute; top: 13px; left: 14px; color: var(--k-text-muted); font-size: 0.66rem; letter-spacing: 0.8px; }
+
+        .checkout-bar { max-width: 1080px; padding: 15px 20px; margin-top: 16px; margin-bottom: 0; }
+        .checkout-info { min-width: 0; }
+        .checkout-info #summary-text { display: inline; }
+        .checkout-total { margin-top: 7px; font-size: 0.75rem; color: var(--k-text-muted); }
+        .checkout-total strong { color: white; }
+
+        .detail-panel,
+        .choice-panel,
+        .finish-card {
+            width: min(100%, 760px);
+            background: linear-gradient(145deg, rgba(30,41,59,0.88), rgba(15,23,42,0.88));
+            border: 1px solid var(--k-line);
+            border-radius: 18px;
+            box-shadow: 0 18px 44px rgba(0,0,0,0.24);
+        }
+
+        .detail-panel { padding: 24px; }
+        .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0; }
+        .detail-stat { padding: 14px; border: 1px solid var(--k-line); border-radius: 12px; background: rgba(255,255,255,0.025); }
+        .detail-stat strong { display: block; color: white; font-size: 1rem; margin-top: 5px; }
+
+        .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: min(100%, 760px); margin: 18px 0 26px; }
+        .choice-card { padding: 18px; border-radius: 14px; border: 1px solid var(--k-line); background: rgba(255,255,255,0.035); cursor: pointer; transition: 0.2s ease; }
+        .choice-card:hover, .choice-card.active { border-color: var(--k-accent); background: rgba(192,178,131,0.1); transform: translateY(-2px); }
+        .choice-card strong { color: white; display: block; margin-bottom: 5px; }
+        .choice-card span { color: var(--k-text-muted); font-size: 0.8rem; line-height: 1.4; }
+
+        .allowance-strip { display: flex; gap: 10px; margin-bottom: 16px; }
+        .allowance-pill { padding: 9px 13px; border: 1px solid var(--k-line); border-radius: 999px; color: var(--k-text-muted); font-size: 0.74rem; }
+        .allowance-pill strong { color: white; }
+
+        .seat-legend { display: flex; gap: 18px; margin: -20px 0 24px; color: var(--k-text-muted); font-size: 0.74rem; }
+        .legend-key { display: inline-flex; align-items: center; gap: 6px; }
+        .legend-swatch { width: 11px; height: 11px; border-radius: 3px; background: #334155; }
+        .legend-swatch.gold { background: var(--k-accent); }
+        .legend-swatch.green { background: var(--k-success); }
+
+        .finish-grid { width: min(100%, 820px); display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; margin-top: 16px; }
+        .finish-card { padding: 22px; width: auto; }
+        .finish-route { display: flex; align-items: center; justify-content: space-between; margin: 17px 0; }
+        .finish-route strong { font-size: 1.8rem; }
+        .finish-route span { color: var(--k-accent); }
+        .finish-list { margin: 0; padding: 0; list-style: none; color: var(--k-text-muted); font-size: 0.82rem; }
+        .finish-list li { padding: 8px 0; border-bottom: 1px solid var(--k-line); display: flex; justify-content: space-between; }
+        .finish-list li:last-child { border-bottom: 0; }
+
+        .assistance-status { width: min(100%, 660px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 22px; }
+        .assistance-status > div { padding: 13px; border-radius: 12px; background: rgba(255,255,255,0.035); border: 1px solid var(--k-line); text-align: center; }
+
+        .accessibility-grid { width: min(100%, 760px); display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+        .toggle-card { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 18px; border: 1px solid var(--k-line); border-radius: 14px; background: rgba(255,255,255,0.035); }
+        .toggle-card strong { display: block; color: white; margin-bottom: 4px; }
+        .toggle-card small { color: var(--k-text-muted); line-height: 1.4; }
+        .switch { width: 48px; height: 26px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08); position: relative; cursor: pointer; flex-shrink: 0; }
+        .switch::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 3px; left: 4px; transition: 0.2s ease; }
+        .switch.on { background: var(--k-success); border-color: var(--k-success); }
+        .switch.on::after { left: 24px; }
+
+        .kiosk-frame.large-text { font-size: 118%; }
+        .kiosk-frame.high-contrast { --k-bg: #000; --k-surface: #0b0b0b; --k-text-muted: #e2e8f0; --k-accent: #ffe16a; }
+        .kiosk-frame.high-contrast .option-card, .kiosk-frame.high-contrast .detail-panel { border-color: rgba(255,255,255,0.45); }
+        .kiosk-frame.reduced-motion *, .kiosk-frame.reduced-motion *::before, .kiosk-frame.reduced-motion *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+
+        .web-search-wrap { max-width: 660px; margin: 24px auto 0; display: flex; gap: 8px; }
+        .web-search-wrap input { flex: 1; border: 0; border-radius: 7px; padding: 13px 15px; font: inherit; }
+        .web-search-wrap button { border: 0; border-radius: 7px; padding: 0 18px; background: #d4af37; color: #12233c; font-weight: 700; cursor: pointer; }
+        .web-alert { background: #eef6ff; border: 1px solid #c9e1fb; color: #164e7a; border-radius: 9px; padding: 14px 18px; margin-bottom: 24px; display: flex; justify-content: space-between; gap: 18px; align-items: center; font-size: 0.88rem; }
+        .web-alert strong { color: #003366; }
+        .support-results { display: none; background: white; border: 1px solid #dbe5ef; border-radius: 8px; padding: 18px; margin: -10px 0 25px; color: #334155; }
+        .support-results.visible { display: block; }
+        .support-results h4 { margin: 0 0 8px; color: var(--w-primary); }
+        .support-results p { margin: 0; font-size: 0.88rem; line-height: 1.55; }
+
+        .tag-route-mini { width: 100%; display: flex; justify-content: space-between; align-items: center; margin: 12px 0 3px; font-weight: bold; }
+        .tag-route-mini span:nth-child(2) { font-weight: normal; letter-spacing: 2px; }
+        .tag-qr { width: 55px; height: 55px; background: conic-gradient(from 90deg, #000 25%, #fff 0 50%, #000 0 75%, #fff 0); background-size: 8px 8px; border: 4px solid white; box-shadow: 0 0 0 1px #000; }
+
+        .demo-ribbon { position: absolute; right: 18px; bottom: 14px; z-index: 50; color: #64748b; font-size: 0.62rem; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; }
+
+        .validation-hint { min-height: 18px; color: #fca5a5; font-size: 0.75rem; opacity: 0; transition: 0.2s ease; }
+        .validation-hint.visible { opacity: 1; }
+        .shake { animation: shake 0.35s ease; }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+        @media (max-width: 900px), (max-height: 760px) {
+            .kiosk-frame { width: 100vw; height: 100vh; max-width: none; border-radius: 0; box-shadow: none; border-top-width: 3px; }
+            header.kiosk-header { padding: 12px 18px; min-height: 70px; }
+            .header-left, .header-right { min-width: 150px; }
+            .assist-btn { padding: 10px 13px; letter-spacing: 1px; }
+            .brand h1 { font-size: 1.5rem; }
+            .flight-tag { padding: 7px 10px; }
+            .kiosk-utility-bar { padding: 7px 18px; }
+            .screen { padding: 20px; }
+            .flight-overview { grid-template-columns: 1fr 1.6fr; }
+            .flight-overview .overview-cell:last-child { display: none; }
+            .journey-summary { grid-template-columns: 1.3fr repeat(2, 1fr); }
+            .journey-summary > div:nth-child(4), .journey-summary > div:nth-child(5) { display: none; }
+            .option-card { min-height: 126px; }
+        }
+
+        @media (max-width: 680px) {
+            .header-right .utility-btn, .flight-tag { display: none; }
+            .header-left, .header-right { min-width: auto; }
+            .kiosk-utility-bar { grid-template-columns: 1fr auto; }
+            .utility-left { display: none; }
+            .utility-right { grid-column: 1; justify-content: flex-start; }
+            .utility-center { grid-column: 2; grid-row: 1; }
+            .flight-overview { grid-template-columns: 1fr; }
+            .flight-overview .overview-cell:last-child { display: flex; }
+            .options-grid, .choice-grid, .accessibility-grid, .finish-grid { grid-template-columns: 1fr; }
+            .journey-summary { grid-template-columns: 1fr 1fr; }
+            .journey-summary > div:first-child { grid-column: 1 / -1; }
+            .checkout-bar { align-items: stretch; flex-direction: column; gap: 12px; }
+            .checkout-bar .btn { width: 100%; }
+            input.ticket-display { width: 280px; }
+            .assistance-status { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    <style id="executive-terminal-theme">
+        /*
+         * Executive Terminal theme
+         * Functional actions use aviation blue; champagne is reserved for premium services.
+         */
+        :root {
+            --k-bg: #07111f;
+            --k-surface: #0f1d30;
+            --k-accent: #55b8ff;
+            --k-accent-bright: #b5e3ff;
+            --k-premium: #d5b873;
+            --k-premium-soft: rgba(213, 184, 115, 0.14);
+            --k-text: #f6f9fc;
+            --k-text-muted: #9fadc0;
+            --k-success: #35d29a;
+            --k-danger: #fb7185;
+            --k-warning: #f4c55e;
+            --k-info: #55b8ff;
+            --k-line: rgba(151, 178, 210, 0.16);
+            --k-panel: rgba(13, 28, 47, 0.86);
+            --k-panel-strong: rgba(7, 17, 31, 0.96);
+            --w-primary: #0a3764;
+            --w-gray: #f3f6fa;
+        }
+
+        html { background: #06101c; }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 50% 12%, rgba(78, 132, 183, 0.2), transparent 34%),
+                linear-gradient(180deg, #111e2d 0%, #07101b 60%, #03070c 100%);
+            font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body::before {
+            background:
+                linear-gradient(90deg, transparent 0 11%, rgba(188, 217, 243, 0.025) 11% 11.1%, transparent 11.1% 88.9%, rgba(188, 217, 243, 0.025) 88.9% 89%, transparent 89%),
+                linear-gradient(180deg, rgba(179, 209, 235, 0.035), transparent 24%),
+                repeating-linear-gradient(90deg, transparent 0 154px, rgba(255, 255, 255, 0.013) 154px 155px);
+        }
+
+        body::after {
+            inset: auto 9vw 0;
+            height: 12vh;
+            background: radial-gradient(ellipse at center, rgba(85, 184, 255, 0.14), transparent 68%);
+            filter: blur(34px);
+        }
+
+        .kiosk-frame {
+            width: min(1280px, 96vw);
+            max-width: 1280px;
+            height: min(930px, 95vh);
+            border-radius: 26px;
+            border-top: 4px solid #526276;
+            background:
+                radial-gradient(circle at 92% 0%, rgba(85, 184, 255, 0.09), transparent 28%),
+                radial-gradient(circle at 2% 100%, rgba(213, 184, 115, 0.055), transparent 24%),
+                linear-gradient(145deg, #091525 0%, #06101d 100%);
+            box-shadow:
+                0 0 0 1px rgba(218, 230, 241, 0.18),
+                0 0 0 9px #172332,
+                0 0 0 10px rgba(217, 228, 239, 0.12),
+                0 34px 90px -24px rgba(0, 0, 0, 0.82),
+                0 14px 36px -18px rgba(0, 0, 0, 0.95);
+        }
+
+        .kiosk-frame::before {
+            background-image:
+                linear-gradient(rgba(152, 187, 219, 0.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(152, 187, 219, 0.018) 1px, transparent 1px);
+            background-size: 44px 44px;
+            opacity: 0.6;
+        }
+
+        .kiosk-frame::after {
+            content: "";
+            position: absolute;
+            z-index: 90;
+            top: 7px;
+            left: 50%;
+            width: 28px;
+            height: 4px;
+            transform: translateX(-50%);
+            border-radius: 999px;
+            background: #02060b;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+            pointer-events: none;
+        }
+
+        .kiosk-frame.calling-service {
+            border-top-color: var(--k-danger);
+            box-shadow:
+                0 0 0 1px rgba(218, 230, 241, 0.18),
+                0 0 0 9px #172332,
+                0 0 0 10px rgba(217, 228, 239, 0.12),
+                0 -16px 48px rgba(251, 113, 133, 0.28),
+                0 34px 90px -24px rgba(0, 0, 0, 0.82);
+        }
+
+        header.kiosk-header {
+            min-height: 88px;
+            padding: 16px 30px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(13, 28, 47, 0.94), rgba(7, 17, 31, 0.84));
+            border-bottom: 1px solid var(--k-line);
+            backdrop-filter: blur(24px) saturate(115%);
+        }
+
+        .header-left {
+            min-width: 0;
+            justify-self: start;
+        }
+
+        .brand {
+            justify-self: center;
+            display: grid;
+            grid-template-columns: 38px auto;
+            grid-template-rows: auto auto;
+            column-gap: 12px;
+            text-align: left;
+            align-items: center;
+        }
+
+        .brand::before {
+            content: "S";
+            grid-row: 1 / 3;
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            color: #07111f;
+            background: linear-gradient(145deg, #b7e3ff, #55b8ff 54%, #2f8bd0);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                0 8px 22px rgba(28, 123, 192, 0.22);
+            font-size: 1rem;
+            font-weight: 850;
+            letter-spacing: -1px;
+        }
+
+        .brand h1 {
+            grid-column: 2;
+            font-family: Inter, "Segoe UI", sans-serif;
+            font-size: 1.66rem;
+            line-height: 1;
+            font-weight: 730;
+            letter-spacing: 4.8px;
+            color: var(--k-text);
+        }
+
+        .brand span {
+            grid-column: 2;
+            margin-top: 5px;
+            color: var(--k-premium);
+            font-size: 0.58rem;
+            font-weight: 700;
+            letter-spacing: 3.3px;
+        }
+
+        .flight-tag {
+            justify-self: end;
+            padding: 10px 15px;
+            border: 1px solid rgba(151, 178, 210, 0.2);
+            border-radius: 11px;
+            background: rgba(85, 184, 255, 0.055);
+            color: #c8d5e4;
+            font-size: 0.72rem;
+            font-weight: 650;
+            letter-spacing: 1.15px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+        }
+
+        .assist-btn,
+        .utility-btn,
+        .small-action {
+            border-radius: 11px;
+            font-family: inherit;
+        }
+
+        .assist-btn {
+            min-height: 43px;
+            padding: 10px 16px;
+            color: #b8c5d4;
+            border: 1px solid rgba(151, 178, 210, 0.21);
+            background: rgba(255, 255, 255, 0.025);
+            font-size: 0.7rem;
+            font-weight: 650;
+            letter-spacing: 1.25px;
+        }
+
+        .assist-btn span {
+            display: grid;
+            place-items: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid rgba(184, 197, 212, 0.48);
+            font-size: 0.68rem;
+        }
+
+        .assist-btn:hover {
+            color: var(--k-text);
+            border-color: rgba(85, 184, 255, 0.65);
+            background: rgba(85, 184, 255, 0.08);
+        }
+
+        .kiosk-utility-bar {
+            min-height: 38px;
+            padding: 7px 30px;
+            background: rgba(4, 12, 23, 0.8);
+            border-bottom: 1px solid rgba(151, 178, 210, 0.11);
+            color: #8899ad;
+            font-size: 0.68rem;
+            font-weight: 540;
+            letter-spacing: 0.8px;
+        }
+
+        .utility-left,
+        .utility-right { gap: 16px; }
+
+        .utility-center {
+            color: #c8d5e4;
+            font-weight: 650;
+            letter-spacing: 1.05px;
+        }
+
+        .utility-btn {
+            min-height: 31px;
+            padding: 6px 11px;
+            border-color: rgba(151, 178, 210, 0.16);
+            background: rgba(255, 255, 255, 0.025);
+            color: #91a2b6;
+            font-size: 0.63rem;
+            font-weight: 650;
+            letter-spacing: 0.85px;
+        }
+
+        .utility-btn:hover {
+            color: var(--k-text);
+            border-color: rgba(85, 184, 255, 0.5);
+            background: rgba(85, 184, 255, 0.07);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--k-success);
+            box-shadow: 0 0 0 3px rgba(53, 210, 154, 0.1), 0 0 12px rgba(53, 210, 154, 0.48);
+        }
+
+        .flight-status-text { color: #77e4bc; }
+
+        .progress-rail {
+            height: 44px;
+            padding: 0 9%;
+            background: rgba(7, 17, 31, 0.76);
+            border-bottom: 1px solid var(--k-line);
+        }
+
+        .progress-step {
+            color: #627489;
+            font-size: 0.62rem;
+            font-weight: 680;
+            letter-spacing: 1.35px;
+        }
+
+        .progress-step::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 34%;
+            height: 1px;
+            background: rgba(151, 178, 210, 0.14);
+        }
+
+        .progress-step:first-child::before { display: none; }
+
+        .progress-step::after {
+            left: 26%;
+            right: 26%;
+            height: 2px;
+            border-radius: 999px;
+        }
+
+        .progress-step.active { color: #e9f2fa; }
+        .progress-step.active::after { background: var(--k-accent); box-shadow: 0 0 14px rgba(85, 184, 255, 0.44); }
+        .progress-step.complete { color: #75dfb8; }
+
+        .step-number {
+            width: 20px;
+            height: 20px;
+            border-color: rgba(151, 178, 210, 0.38);
+            background: rgba(255, 255, 255, 0.025);
+            font-weight: 750;
+        }
+
+        .progress-step.active .step-number {
+            color: #07111f;
+            border-color: var(--k-accent);
+            background: var(--k-accent);
+            box-shadow: 0 0 0 4px rgba(85, 184, 255, 0.09);
+        }
+
+        .progress-step.complete .step-number {
+            color: #07111f;
+            border-color: var(--k-success);
+            background: var(--k-success);
+        }
+
+        .screen {
+            padding: 26px 34px 30px;
+            background:
+                radial-gradient(circle at 50% -15%, rgba(85, 184, 255, 0.035), transparent 37%),
+                transparent;
+        }
+
+        h2 {
+            margin: 0 0 8px;
+            color: var(--k-text);
+            font-family: Inter, "Segoe UI", sans-serif;
+            font-size: clamp(1.85rem, 2.5vw, 2.42rem);
+            line-height: 1.12;
+            font-weight: 650;
+            letter-spacing: -0.045em;
+        }
+
+        p.subtitle {
+            max-width: 660px;
+            margin: 0 0 20px;
+            color: var(--k-text-muted);
+            font-size: 0.96rem;
+            line-height: 1.55;
+            font-weight: 410;
+        }
+
+        .eyebrow {
+            margin-bottom: 9px;
+            color: var(--k-premium);
+            font-size: 0.62rem;
+            font-weight: 750;
+            letter-spacing: 2.15px;
+        }
+
+        .flight-overview {
+            width: min(100%, 980px);
+            margin: 5px 0 18px;
+            gap: 0;
+            border: 1px solid var(--k-line);
+            border-radius: 18px;
+            background: rgba(8, 19, 34, 0.72);
+            box-shadow: 0 18px 45px -30px rgba(0, 0, 0, 0.9);
+        }
+
+        .overview-cell {
+            min-height: 82px;
+            padding: 16px 20px;
+            background: linear-gradient(145deg, rgba(17, 34, 56, 0.9), rgba(10, 23, 40, 0.92));
+            border-right: 1px solid var(--k-line);
+        }
+
+        .overview-cell:last-child { border-right: 0; }
+        .overview-label,
+        .metric-label {
+            color: #8394a9;
+            font-size: 0.61rem;
+            font-weight: 680;
+            letter-spacing: 1.25px;
+        }
+
+        .overview-value,
+        .metric-value { color: #f6f9fc; }
+        .overview-value { font-size: 0.95rem; }
+        .tiny-note { color: #8292a5; }
+        .airport-code { font-size: 1.55rem; letter-spacing: 0.5px; }
+        .route-track { background: linear-gradient(90deg, rgba(85, 184, 255, 0.8), rgba(85, 184, 255, 0.18)); }
+        .route-track::after { color: var(--k-accent-bright); }
+
+        .ticket-input-container {
+            position: relative;
+            width: min(100%, 520px);
+            gap: 14px;
+            padding: 30px 26px 22px;
+            border: 1px solid var(--k-line);
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(15, 31, 51, 0.9), rgba(8, 19, 34, 0.9));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.025),
+                0 20px 46px -34px rgba(0, 0, 0, 0.9);
+        }
+
+        .ticket-input-container::before {
+            content: "TICKET ID";
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #75879b;
+            font-size: 0.59rem;
+            font-weight: 750;
+            letter-spacing: 1.75px;
+        }
+
+        input.ticket-display {
+            width: 366px;
+            height: 58px;
+            padding: 0 9px 0 27px;
+            border: 1px solid rgba(151, 178, 210, 0.22);
+            border-radius: 14px;
+            background: rgba(2, 9, 18, 0.56);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25);
+            color: var(--k-text);
+            font-size: 2rem;
+            font-weight: 620;
+            letter-spacing: 23px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        input.ticket-display:focus-visible {
+            border-color: var(--k-accent);
+            outline: 3px solid rgba(85, 184, 255, 0.18);
+            outline-offset: 2px;
+        }
+
+        .numpad { gap: 9px; }
+
+        .num-btn {
+            width: 58px;
+            height: 54px;
+            border: 1px solid rgba(151, 178, 210, 0.17);
+            border-radius: 13px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            color: #edf4fb;
+            font-size: 1.03rem;
+            font-weight: 580;
+        }
+
+        .num-btn:hover {
+            border-color: rgba(85, 184, 255, 0.62);
+            background: rgba(85, 184, 255, 0.1);
+        }
+
+        .num-btn:active {
+            transform: translateY(1px);
+            color: #06101d;
+            background: var(--k-accent);
+        }
+
+        .num-btn:nth-child(10) {
+            color: #ff9aac !important;
+            background: rgba(251, 113, 133, 0.055);
+        }
+
+        .num-btn:nth-child(12) {
+            color: #80e5be !important;
+            background: rgba(53, 210, 154, 0.06);
+        }
+
+        .entry-actions {
+            margin-top: 12px;
+            gap: 9px;
+            font-size: 0.74rem;
+        }
+
+        .small-action {
+            min-height: 39px;
+            padding: 9px 14px;
+            border-color: rgba(151, 178, 210, 0.2);
+            background: rgba(255, 255, 255, 0.025);
+            color: #d6e0eb;
+            font-size: 0.73rem;
+            font-weight: 630;
+        }
+
+        .small-action:hover {
+            border-color: rgba(85, 184, 255, 0.58);
+            background: rgba(85, 184, 255, 0.075);
+        }
+
+        .small-action.gold {
+            color: #ead49c;
+            border-color: rgba(213, 184, 115, 0.38);
+            background: var(--k-premium-soft);
+        }
+
+        .validation-hint { color: #ff9aab; }
+
+        #screen-dash > h2 {
+            font-size: 2rem !important;
+            font-weight: 650 !important;
+            letter-spacing: -0.04em !important;
+            text-transform: none !important;
+        }
+
+        #screen-dash > p.subtitle { margin-bottom: 17px !important; }
+
+        .journey-summary {
+            width: min(100%, 1100px);
+            margin: 2px 0 16px;
+            border-color: var(--k-line);
+            border-radius: 16px;
+            background: linear-gradient(145deg, rgba(13, 28, 47, 0.84), rgba(7, 17, 31, 0.72));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
+        }
+
+        .journey-summary > div {
+            padding: 13px 16px;
+            border-color: var(--k-line);
+        }
+
+        .summary-arrow { color: var(--k-accent); }
+        .summary-route strong { font-size: 1.12rem; letter-spacing: 0.3px; }
+
+        .options-grid {
+            max-width: 1100px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .option-card {
+            min-height: 126px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 52px minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            align-content: center;
+            align-items: center;
+            column-gap: 15px;
+            text-align: left;
+            border: 1px solid var(--k-line);
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(16, 33, 54, 0.9), rgba(9, 21, 37, 0.9));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.025),
+                0 16px 32px -30px rgba(0, 0, 0, 0.95);
+        }
+
+        .option-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 3px;
+            border-radius: 18px 0 0 18px;
+            background: transparent;
+            transition: background 0.2s ease;
+        }
+
+        .option-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(85, 184, 255, 0.48);
+            background: linear-gradient(145deg, rgba(18, 39, 64, 0.95), rgba(9, 23, 40, 0.94));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.035),
+                0 18px 36px -28px rgba(0, 0, 0, 0.95);
+        }
+
+        .option-card:hover::before { background: var(--k-accent); }
+
+        .option-card svg {
+            grid-column: 1;
+            grid-row: 1 / 3;
+            width: 50px;
+            height: 50px;
+            margin: 0;
+            padding: 13px;
+            border: 1px solid rgba(85, 184, 255, 0.13);
+            border-radius: 14px;
+            background: rgba(85, 184, 255, 0.075);
+            fill: var(--k-accent);
+        }
+
+        .option-card:hover svg {
+            transform: none;
+            filter: none;
+            border-color: rgba(85, 184, 255, 0.3);
+            background: rgba(85, 184, 255, 0.12);
+        }
+
+        .option-card h3 {
+            grid-column: 2;
+            align-self: end;
+            margin: 0 0 4px;
+            color: #f1f6fb;
+            font-size: 0.98rem;
+            font-weight: 640;
+            letter-spacing: -0.012em;
+        }
+
+        .option-card > span:not(.service-price) {
+            grid-column: 2;
+            align-self: start;
+            margin: 0;
+            color: #8596aa;
+            font-size: 0.73rem;
+            line-height: 1.35;
+            font-weight: 430;
+        }
+
+        .option-card.selected {
+            border-color: rgba(53, 210, 154, 0.5);
+            background: linear-gradient(145deg, rgba(17, 57, 57, 0.68), rgba(8, 27, 36, 0.92));
+        }
+
+        .option-card.selected::before { background: var(--k-success); }
+
+        .option-card.selected svg {
+            fill: #72e3ba;
+            border-color: rgba(53, 210, 154, 0.2);
+            background: rgba(53, 210, 154, 0.09);
+        }
+
+        .upsell-badge {
+            top: 13px;
+            right: 13px;
+            padding: 5px 8px;
+            border: 1px solid rgba(213, 184, 115, 0.34);
+            border-radius: 999px;
+            background: rgba(213, 184, 115, 0.1);
+            color: #e6cf94;
+            font-size: 0.56rem;
+            font-weight: 750;
+            letter-spacing: 0.85px;
+        }
+
+        .option-card .service-price {
+            top: 14px;
+            left: auto;
+            right: 14px;
+            color: #8dd8ff;
+            font-size: 0.59rem;
+            font-weight: 720;
+            letter-spacing: 0.75px;
+        }
+
+        .checkout-bar {
+            width: min(100%, 1100px);
+            max-width: 1100px;
+            min-height: 78px;
+            margin: 15px 0 0;
+            padding: 14px 17px 14px 20px;
+            border: 1px solid rgba(151, 178, 210, 0.19);
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(16, 33, 54, 0.95), rgba(8, 20, 35, 0.95));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.03),
+                0 18px 40px -32px rgba(0, 0, 0, 0.9);
+        }
+
+        .checkout-info {
+            color: #899aaf;
+            font-size: 0.87rem;
+            font-weight: 430;
+        }
+
+        .checkout-info strong {
+            color: #dbe6f0;
+            font-weight: 680;
+        }
+
+        .checkout-info #summary-text { color: #b5e3ff; }
+        .checkout-total { color: #76899f; }
+        .checkout-total strong { color: #e9f2fa; }
+
+        .btn {
+            min-height: 48px;
+            padding: 13px 24px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.83rem;
+            font-weight: 680;
+            letter-spacing: 0.1px;
+            text-transform: none;
+        }
+
+        .btn-primary {
+            color: #05101c;
+            background: linear-gradient(180deg, #78caff 0%, #4eaeef 100%);
+            border: 1px solid rgba(184, 226, 255, 0.5);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.45),
+                0 9px 22px -12px rgba(50, 155, 228, 0.7);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.045);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.55),
+                0 12px 28px -12px rgba(50, 155, 228, 0.78);
+        }
+
+        .btn-secondary {
+            color: #d4deea;
+            border: 1px solid rgba(151, 178, 210, 0.24);
+            background: rgba(255, 255, 255, 0.025);
+        }
+
+        .btn-secondary:hover {
+            color: var(--k-text);
+            border-color: rgba(85, 184, 255, 0.5);
+            background: rgba(85, 184, 255, 0.065);
+        }
+
+        .detail-panel,
+        .choice-panel,
+        .finish-card {
+            border-color: var(--k-line);
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(16, 33, 54, 0.92), rgba(8, 20, 35, 0.92));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.026),
+                0 22px 48px -36px rgba(0, 0, 0, 0.95);
+        }
+
+        .detail-panel { padding: 26px; }
+        .detail-stat {
+            border-color: var(--k-line);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.022);
+        }
+
+        .choice-card {
+            min-height: 94px;
+            padding: 19px;
+            border-color: var(--k-line);
+            border-radius: 15px;
+            background: linear-gradient(145deg, rgba(16, 33, 54, 0.75), rgba(8, 20, 35, 0.72));
+        }
+
+        .choice-card:hover,
+        .choice-card.active {
+            transform: translateY(-1px);
+            border-color: rgba(85, 184, 255, 0.48);
+            background: rgba(85, 184, 255, 0.075);
+        }
+
+        .choice-card.active {
+            box-shadow: inset 3px 0 0 var(--k-accent);
+        }
+
+        .choice-card strong { color: #edf4fa; }
+        .choice-card span { color: #8798ac; }
+
+        .allowance-strip { margin-bottom: 18px; }
+        .allowance-pill {
+            padding: 8px 12px;
+            border-color: var(--k-line);
+            background: rgba(255, 255, 255, 0.025);
+            color: #899aaf;
+        }
+
+        .allowance-pill strong { color: #dce6f0; }
+
+        .scale-container {
+            position: relative;
+            width: 248px;
+            height: 248px;
+            border: 1px solid rgba(151, 178, 210, 0.2);
+            background:
+                radial-gradient(circle at 50% 42%, rgba(85, 184, 255, 0.08), transparent 36%),
+                radial-gradient(circle, #12243a 0%, #071321 67%, #050c15 100%);
+            box-shadow:
+                inset 0 0 0 10px rgba(255, 255, 255, 0.016),
+                inset 0 0 0 11px rgba(151, 178, 210, 0.08),
+                0 22px 50px -34px rgba(0, 0, 0, 0.96);
+        }
+
+        .scale-container::before {
+            content: "CALIBRATED";
+            position: absolute;
+            top: 43px;
+            color: #63768d;
+            font-size: 0.55rem;
+            font-weight: 750;
+            letter-spacing: 1.55px;
+        }
+
+        .weight-display {
+            color: #f3f8fc;
+            font-size: 4.55rem;
+            font-weight: 560;
+            letter-spacing: -0.055em;
+        }
+
+        .unit {
+            color: #7fcfff;
+            font-size: 0.92rem;
+            font-weight: 750;
+            letter-spacing: 2px;
+        }
+
+        .scale-status {
+            border: 1px solid transparent;
+            font-size: 0.72rem;
+            font-weight: 720;
+        }
+
+        #screen-seat > div[style*="grid-template-columns"] {
+            width: min(100%, 410px);
+            grid-template-columns: repeat(4, 72px) !important;
+            justify-content: center;
+            gap: 12px !important;
+            margin-bottom: 28px !important;
+            padding: 24px;
+            border: 1px solid var(--k-line);
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(16, 33, 54, 0.88), rgba(8, 20, 35, 0.88));
+        }
+
+        #screen-seat > div[style*="grid-template-columns"] > div[style*="background:#334155"] {
+            width: 72px !important;
+            height: 62px !important;
+            border: 1px solid rgba(151, 178, 210, 0.16);
+            border-radius: 13px !important;
+            background: #13253b !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+        }
+
+        #screen-seat > div[style*="grid-template-columns"] > div:nth-child(5):not(.seat-legend) {
+            width: 72px !important;
+            height: 62px !important;
+            border: 1px solid rgba(85, 184, 255, 0.28);
+            border-radius: 13px !important;
+            background: rgba(85, 184, 255, 0.12) !important;
+            opacity: 1 !important;
+        }
+
+        #screen-seat > div[style*="grid-template-columns"] > #seat-upgrade-btn {
+            width: 72px !important;
+            height: 62px !important;
+            color: #06101d !important;
+            border: 1px solid rgba(184, 226, 255, 0.5) !important;
+            border-radius: 13px !important;
+            background: linear-gradient(180deg, #78caff, #4eaeef) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 18px -14px rgba(85, 184, 255, 0.9);
+        }
+
+        #screen-seat > div[style*="grid-template-columns"] > #seat-upgrade-btn.is-selected {
+            color: #04130d !important;
+            border-color: rgba(130, 238, 197, 0.55) !important;
+            background: linear-gradient(180deg, #67e2b5, #35d29a) !important;
+        }
+
+        .seat-legend {
+            grid-column: 1 / -1;
+            justify-content: center;
+            margin: 7px 0 0;
+            padding-top: 17px;
+            border-top: 1px solid var(--k-line);
+        }
+
+        .legend-swatch { background: #13253b; border: 1px solid rgba(151, 178, 210, 0.18); }
+        .legend-swatch.gold { background: var(--k-accent); }
+        .legend-swatch.green { background: var(--k-success); }
+
+        .assistance-status > div,
+        .toggle-card {
+            border-color: var(--k-line);
+            border-radius: 15px;
+            background: linear-gradient(145deg, rgba(16, 33, 54, 0.7), rgba(8, 20, 35, 0.72));
+        }
+
+        #screen-help > div[style*="background: rgba(255,255,255,0.03)"] {
+            border-color: rgba(213, 184, 115, 0.3) !important;
+            border-radius: 20px !important;
+            background: linear-gradient(145deg, rgba(37, 36, 31, 0.54), rgba(16, 27, 42, 0.9)) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+        }
+
+        #screen-help > h2 { color: #f2dca5 !important; }
+        #screen-priority > div[style*="background: rgba(255,255,255,0.05)"] {
+            min-width: 350px;
+            border: 1px solid rgba(213, 184, 115, 0.25);
+            border-radius: 18px !important;
+            background: linear-gradient(145deg, rgba(42, 38, 27, 0.48), rgba(12, 25, 41, 0.9)) !important;
+        }
+
+        .switch {
+            border-color: rgba(151, 178, 210, 0.25);
+            background: rgba(255, 255, 255, 0.055);
+        }
+
+        .switch.on {
+            border-color: var(--k-accent);
+            background: var(--k-accent);
+        }
+
+        .switch.on::after { background: #07111f; }
+
+        .finish-grid { width: min(100%, 860px); gap: 16px; }
+        .finish-card { padding: 24px; }
+        .finish-route span { color: var(--k-accent); }
+        .finish-list li { border-color: var(--k-line); }
+
+        .toast-notification {
+            bottom: 28px;
+            padding: 13px 20px;
+            border: 1px solid rgba(105, 230, 184, 0.3);
+            border-radius: 13px;
+            background: rgba(8, 33, 35, 0.94);
+            box-shadow: 0 18px 42px -20px rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(16px);
+            font-size: 0.83rem;
+        }
+
+        .demo-ribbon {
+            right: 18px;
+            bottom: 12px;
+            color: #52657a;
+            font-size: 0.55rem;
+            font-weight: 650;
+            letter-spacing: 1.05px;
+        }
+
+        .print-overlay {
+            background: rgba(3, 9, 17, 0.96);
+            backdrop-filter: blur(12px);
+        }
+
+        .print-overlay:not(.visible) {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition: none !important;
+        }
+
+        .printer-slot {
+            height: 17px;
+            border: 1px solid rgba(151, 178, 210, 0.12);
+            background: #010307;
+            box-shadow: 0 5px 16px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .print-status { color: #9fd9ff; }
+
+        #screen-browser {
+            background: #f3f6fa;
+        }
+
+        .web-nav {
+            min-height: 72px;
+            padding: 16px 34px;
+            border-bottom: 1px solid #dce4ed;
+            box-shadow: 0 3px 14px rgba(12, 38, 65, 0.04);
+        }
+
+        .web-logo {
+            font-family: Inter, "Segoe UI", sans-serif;
+            color: #0b3a68;
+            font-size: 1.25rem;
+            font-weight: 760;
+            letter-spacing: 3px;
+        }
+
+        .web-links {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 560;
+        }
+
+        .web-links button {
+            border-radius: 9px !important;
+            background: #0b3a68 !important;
+            font-weight: 650;
+        }
+
+        .web-hero {
+            padding: 48px 40px 52px;
+            background:
+                radial-gradient(circle at 75% 10%, rgba(93, 188, 255, 0.22), transparent 30%),
+                linear-gradient(135deg, #0b3a68 0%, #082b4f 100%);
+        }
+
+        .web-hero h1 {
+            font-family: Inter, "Segoe UI", sans-serif;
+            font-size: 2.35rem;
+            font-weight: 680;
+            letter-spacing: -0.045em;
+        }
+
+        .web-hero p { color: #d7e6f4; }
+        .web-search-wrap input,
+        .web-search-wrap button { border-radius: 10px; }
+        .web-search-wrap input { box-shadow: 0 10px 24px rgba(0, 20, 39, 0.14); }
+        .web-search-wrap button { background: #76c8ff; color: #08233d; }
+        .web-container { margin-top: 32px; }
+        .web-alert { border-color: #c8e2f7; border-radius: 12px; background: #eef8ff; }
+        .info-card,
+        .support-results {
+            border-color: #dce5ee;
+            border-radius: 14px;
+            box-shadow: 0 10px 28px -24px rgba(11, 58, 104, 0.48);
+        }
+
+        .info-card h4 { color: #0b3a68; }
+
+        .kiosk-frame.high-contrast {
+            --k-bg: #000;
+            --k-surface: #080808;
+            --k-panel: #050505;
+            --k-panel-strong: #000;
+            --k-text: #fff;
+            --k-text-muted: #f1f5f9;
+            --k-accent: #64c8ff;
+            --k-accent-bright: #d8f2ff;
+            --k-premium: #ffe36d;
+            --k-line: rgba(255, 255, 255, 0.48);
+        }
+
+        .kiosk-frame.high-contrast .option-card,
+        .kiosk-frame.high-contrast .detail-panel,
+        .kiosk-frame.high-contrast .ticket-input-container,
+        .kiosk-frame.high-contrast .journey-summary {
+            border-color: rgba(255, 255, 255, 0.58);
+            background: #050505;
+        }
+
+        @media (max-width: 900px), (max-height: 760px) {
+            .kiosk-frame {
+                width: 100vw;
+                height: 100vh;
+                max-width: none;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            header.kiosk-header { min-height: 72px; padding: 11px 18px; }
+            .brand { grid-template-columns: 32px auto; column-gap: 9px; }
+            .brand::before { width: 32px; height: 32px; border-radius: 10px; }
+            .brand h1 { font-size: 1.36rem; letter-spacing: 3.8px; }
+            .brand span { font-size: 0.5rem; letter-spacing: 2.6px; }
+            .progress-rail { padding: 0 4%; }
+            .screen { padding: 19px 22px 24px; }
+            .option-card { min-height: 116px; padding: 16px; }
+            .option-card svg { width: 45px; height: 45px; padding: 11px; }
+        }
+
+        @media (max-width: 680px) {
+            .brand::before { display: none; }
+            .brand { display: block; text-align: center; }
+            .brand h1, .brand span { grid-column: auto; }
+            .options-grid { grid-template-columns: 1fr; }
+            .option-card { min-height: 105px; }
+            .overview-cell { border-right: 0; border-bottom: 1px solid var(--k-line); }
+            .overview-cell:last-child { border-bottom: 0; }
+            input.ticket-display { width: 286px; font-size: 1.72rem; letter-spacing: 17px; padding-left: 20px; }
+            #screen-seat > div[style*="grid-template-columns"] {
+                grid-template-columns: repeat(4, 58px) !important;
+                padding: 17px;
+            }
+            #screen-seat > div[style*="grid-template-columns"] > div:not(.seat-legend) {
+                width: 58px !important;
+                height: 54px !important;
+            }
+        }
+    </style>
+
 </head>
 <body>
 
@@ -417,9 +1895,52 @@
         <div class="flight-tag">FLIGHT 492 &bull; JFK</div>
     </header>
 
+    <div class="kiosk-utility-bar" aria-label="Flight summary">
+        <div class="utility-left">
+            <span><span class="status-dot"></span><span class="flight-status-text">ON TIME</span></span>
+            <span>Gate B22</span>
+            <span>Boarding 8:55 PM</span>
+        </div>
+        <div class="utility-center" id="kioskClock">--:-- --</div>
+        <div class="utility-right">
+            <button class="utility-btn" type="button" onclick="toggleLanguage()" id="languageBtn">EN / ES</button>
+            <button class="utility-btn" type="button" onclick="openAccessibility()">Accessibility</button>
+        </div>
+    </div>
+
+    <div class="progress-rail" aria-label="Check-in progress">
+        <div class="progress-step active" id="progress-identify"><span class="step-number">1</span> Identify</div>
+        <div class="progress-step" id="progress-customize"><span class="step-number">2</span> Customize</div>
+        <div class="progress-step" id="progress-print"><span class="step-number">3</span> Print</div>
+    </div>
+
+
     <div id="screen-id" class="screen active">
         <h2>Welcome Back.</h2>
         <p class="subtitle">Please enter your 6-digit Ticket ID to access your reservation.</p>
+
+        <div class="flight-overview" aria-label="Upcoming flight">
+            <div class="overview-cell">
+                <span class="overview-label">Passenger</span>
+                <span class="overview-value">Alex Morgan</span>
+                <span class="tiny-note">Skyline Signature · Gold</span>
+            </div>
+            <div class="overview-cell">
+                <span class="overview-label">Tonight's journey</span>
+                <div class="route-line">
+                    <strong class="airport-code">JFK</strong>
+                    <span class="route-track"></span>
+                    <strong class="airport-code">LAX</strong>
+                </div>
+                <span class="tiny-note">Nonstop · 6h 12m · Boeing 787-9</span>
+            </div>
+            <div class="overview-cell">
+                <span class="overview-label">Departure</span>
+                <span class="overview-value">9:40 PM · Gate B22</span>
+                <span class="tiny-note">Boarding begins at 8:55 PM</span>
+            </div>
+        </div>
+
         
         <div class="ticket-input-container">
             <input type="text" id="ticketDisplay" class="ticket-display" readonly>
@@ -442,11 +1963,30 @@
         <div style="margin-top: 20px; font-size: 0.9rem; color: var(--k-text-muted); opacity: 0.7;">
             Or Scan QR Code Boarding Pass
         </div>
+        <div class="entry-actions">
+            <span>Or Scan QR Code Boarding Pass</span>
+            <button class="small-action gold" type="button" onclick="demoReservation()">Use Demo Reservation</button>
+            <button class="small-action" type="button" onclick="simulateQrScan()">Simulate QR Scan</button>
+        </div>
+        <div class="validation-hint" id="ticketHint">Enter at least 3 digits, or use the demo reservation.</div>
+
     </div>
 
     <div id="screen-dash" class="screen" style="justify-content: flex-start; padding-top: 30px;">
         <h2 style="text-transform: uppercase; letter-spacing: 2px; font-size: 1.8rem; margin-bottom: 5px;">Services Dashboard</h2>
         <p class="subtitle" style="margin-bottom: 25px;">Select services to add to your itinerary.</p>
+
+        <div class="journey-summary" aria-label="Current itinerary">
+            <div>
+                <span class="metric-label">Your flight</span>
+                <div class="summary-route"><strong>JFK</strong><span class="summary-arrow">→</span><strong>LAX</strong></div>
+            </div>
+            <div><span class="metric-label">Flight</span><span class="metric-value">SL 492</span></div>
+            <div><span class="metric-label">Gate</span><span class="metric-value">B22</span></div>
+            <div><span class="metric-label">Seat</span><span class="metric-value" id="dashboard-seat">24F</span></div>
+            <div><span class="metric-label">Boarding</span><span class="metric-value">8:55 PM</span></div>
+        </div>
+
         
         <div class="options-grid">
             <div class="option-card" onclick="startWeighing()">
@@ -478,11 +2018,30 @@
                 <h3>Priority Access</h3>
                 <span>Expedited Boarding</span>
             </div>
+
+            <div class="option-card" id="meal-card" onclick="openMealSelection()">
+                <div class="upsell-badge" id="meal-badge" style="display:none; background: var(--k-success); color: white; border-color: var(--k-success);">SELECTED</div>
+                <span class="service-price">Included</span>
+                <svg viewBox="0 0 24 24"><path d="M8.1 13.34 3.91 9.16a4.008 4.008 0 0 1 0-5.66 4.008 4.008 0 0 1 5.66 0l1.41 1.42 1.42-1.42a4.008 4.008 0 0 1 5.66 0 4.008 4.008 0 0 1 0 5.66L13.88 13.34 11 16.21l-2.9-2.87zM4 19h16v2H4z"/></svg>
+                <h3>Meal Preference</h3>
+                <span id="meal-sub">Choose in-flight meal</span>
+            </div>
+
+            <div class="option-card" id="lounge-card" onclick="openLounge()">
+                <div class="upsell-badge" id="lounge-badge" style="display:none; background: var(--k-success); color: white; border-color: var(--k-success);">ADDED</div>
+                <div class="upsell-badge" id="lounge-upsell">$35</div>
+                <svg viewBox="0 0 24 24"><path d="M3 4h18v2H3V4zm2 4h14v10H5V8zm2 2v6h10v-6H7zm-2 10h14v2H5v-2z"/></svg>
+                <h3>Skyline Lounge</h3>
+                <span>Quiet space near Gate B18</span>
+            </div>
+
         </div>
 
         <div class="checkout-bar">
             <div class="checkout-info">
                 <strong>YOUR SELECTION:</strong> <span id="summary-text">Standard Ticket</span>
+                <div class="checkout-total">Estimated add-ons: <strong id="cart-total">$0.00</strong> · No payment collected in demo</div>
+
             </div>
             <button class="btn btn-primary" onclick="printAll()">Print Tickets & Tags</button>
         </div>
@@ -527,9 +2086,79 @@
         </div>
     </div>
 
+
+
+    <div id="screen-meal" class="screen">
+        <span class="eyebrow">Included with your ticket</span>
+        <h2>Choose a Meal</h2>
+        <p class="subtitle">Selections can be updated until two hours before departure.</p>
+        <div class="choice-grid" id="mealChoices">
+            <div class="choice-card" onclick="chooseMeal('Chef’s Seasonal', this)"><strong>Chef’s Seasonal</strong><span>Herb chicken, roasted vegetables, and lemon couscous.</span></div>
+            <div class="choice-card" onclick="chooseMeal('Vegetarian', this)"><strong>Vegetarian</strong><span>Wild mushroom farro with seasonal greens.</span></div>
+            <div class="choice-card" onclick="chooseMeal('Gluten-Friendly', this)"><strong>Gluten-Friendly</strong><span>Grilled salmon, rice pilaf, and vegetables.</span></div>
+            <div class="choice-card" onclick="chooseMeal('Kids Meal', this)"><strong>Kids Meal</strong><span>Macaroni, fresh fruit, crackers, and juice.</span></div>
+        </div>
+        <div>
+            <button class="btn btn-secondary" onclick="goToScreen('screen-dash')">Return</button>
+            <button class="btn btn-primary" id="confirmMealBtn" onclick="confirmMeal()" disabled style="opacity:0.5">Confirm Meal</button>
+        </div>
+    </div>
+
+    <div id="screen-lounge" class="screen">
+        <span class="eyebrow">Available tonight</span>
+        <h2>Skyline Lounge</h2>
+        <p class="subtitle">Relax before boarding in our lounge near Gate B18.</p>
+        <div class="detail-panel">
+            <div class="eyebrow">One-time access · $35.00</div>
+            <div class="detail-grid">
+                <div class="detail-stat"><span class="metric-label">Walk time</span><strong>4 minutes</strong></div>
+                <div class="detail-stat"><span class="metric-label">Open until</span><strong>10:30 PM</strong></div>
+                <div class="detail-stat"><span class="metric-label">Current capacity</span><strong style="color:#86efac">Comfortable</strong></div>
+            </div>
+            <p style="color:var(--k-text-muted); line-height:1.6; margin:0;">Includes light dining, beverages, fast Wi-Fi, charging stations, quiet work areas, and a dedicated boarding announcement for Flight 492.</p>
+        </div>
+        <div style="margin-top:24px;">
+            <button class="btn btn-secondary" onclick="goToScreen('screen-dash')">Return</button>
+            <button class="btn btn-primary" onclick="toggleLoungeFromScreen()" id="loungeActionBtn">Add Lounge Access</button>
+        </div>
+    </div>
+
+    <div id="screen-accessibility" class="screen">
+        <span class="eyebrow">Display and interaction</span>
+        <h2>Accessibility Options</h2>
+        <p class="subtitle">Choose the settings that make this kiosk easier to use.</p>
+        <div class="accessibility-grid">
+            <div class="toggle-card"><div><strong>Larger text</strong><small>Increase labels and body text.</small></div><button class="switch" id="largeTextSwitch" aria-label="Toggle larger text" onclick="toggleAccessSetting('large-text', this)"></button></div>
+            <div class="toggle-card"><div><strong>High contrast</strong><small>Increase contrast and brighten controls.</small></div><button class="switch" id="contrastSwitch" aria-label="Toggle high contrast" onclick="toggleAccessSetting('high-contrast', this)"></button></div>
+            <div class="toggle-card"><div><strong>Reduce motion</strong><small>Minimize transitions and print animation.</small></div><button class="switch" id="motionSwitch" aria-label="Toggle reduced motion" onclick="toggleAccessSetting('reduced-motion', this)"></button></div>
+            <div class="toggle-card"><div><strong>Audio guidance</strong><small>Demo spoken-style prompts visually.</small></div><button class="switch" id="audioSwitch" aria-label="Toggle audio guidance" onclick="toggleAudioGuidance(this)"></button></div>
+        </div>
+        <button class="btn btn-primary" onclick="closeAccessibility()">Done</button>
+    </div>
     <div id="screen-finish" class="screen">
         <h2>Have a pleasant flight.</h2>
         <p class="subtitle">Please collect your boarding pass and tags.</p>
+
+        <div class="finish-grid">
+            <div class="finish-card">
+                <span class="eyebrow">Flight SL 492</span>
+                <div class="finish-route"><strong>JFK</strong><span>Nonstop ✈</span><strong>LAX</strong></div>
+                <ul class="finish-list">
+                    <li><span>Boarding begins</span><strong>8:55 PM</strong></li>
+                    <li><span>Gate</span><strong>B22</strong></li>
+                    <li><span>Seat</span><strong id="finish-seat">24F</strong></li>
+                    <li><span>Boarding group</span><strong id="finish-group">Group 4</strong></li>
+                </ul>
+            </div>
+            <div class="finish-card">
+                <span class="eyebrow">You're ready</span>
+                <h3 style="margin:10px 0 8px; color:white;">Next steps</h3>
+                <p style="color:var(--k-text-muted); font-size:0.82rem; line-height:1.55;">Proceed to security, then follow signs to Concourse B. Your boarding pass and selected baggage tags have been printed.</p>
+                <button class="small-action gold" onclick="showNotification('Boarding pass added to demo wallet')">Add to Mobile Wallet</button>
+                <button class="small-action" onclick="resetApp()">Start New Session</button>
+            </div>
+        </div>
+
         
         <div style="margin: 30px 0; text-align: center;">
             <p style="margin-top: 40px; color: var(--k-text-muted); font-size: 0.9rem;">
@@ -541,6 +2170,13 @@
     <div id="screen-weigh" class="screen">
         <h2>Baggage Weigh-In</h2>
         <p class="subtitle">Please place your item on the scale platform.</p>
+
+        <div class="allowance-strip" aria-label="Baggage allowance">
+            <span class="allowance-pill"><strong>Allowance:</strong> 1 checked bag</span>
+            <span class="allowance-pill"><strong>Limit:</strong> 50.0 lb</span>
+            <span class="allowance-pill"><strong>Oversize:</strong> See agent</span>
+        </div>
+
 
         <div class="scale-container">
             <div class="weight-display" id="weightVal">00.0</div>
@@ -568,6 +2204,12 @@
             <div id="seat-upgrade-btn" style="background:var(--k-accent); height:60px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:black; font-weight:bold" onclick="confirmSeat()">$25</div>
             <div style="background:#334155; height:60px; border-radius:8px;"></div>
             <div style="background:#334155; height:60px; border-radius:8px;"></div>
+
+        <div class="seat-legend">
+            <span class="legend-key"><span class="legend-swatch"></span> Available</span>
+            <span class="legend-key"><span class="legend-swatch gold"></span> Economy+ $25</span>
+            <span class="legend-key"><span class="legend-swatch green"></span> Selected</span>
+        </div>
         </div>
         
         <div id="seat-actions" style="text-align: center;">
@@ -581,6 +2223,13 @@
             A Skyline Concierge has been notified.<br>
             They will arrive at your station shortly.
         </p>
+
+        <div class="assistance-status">
+            <div><span class="metric-label">Request</span><span class="metric-value">Received</span></div>
+            <div><span class="metric-label">Estimated arrival</span><span class="metric-value">2–4 min</span></div>
+            <div><span class="metric-label">Station</span><span class="metric-value">K-14</span></div>
+        </div>
+
 
         <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--k-accent); padding: 30px; border-radius: 12px; max-width: 500px; text-align: center; margin-bottom: 40px;">
             <h3 style="color: white; font-family: 'Playfair Display', serif; margin-top: 0;">While you wait...</h3>
@@ -617,9 +2266,23 @@
             <div class="web-hero">
                 <h1>How can we help?</h1>
                 <p>Search our knowledge base or contact our global support team.</p>
+                <div class="web-search-wrap">
+                    <input id="supportSearchInput" type="search" placeholder="Search baggage, seats, refunds, accessibility..." onkeydown="if(event.key === 'Enter') searchSupport()">
+                    <button onclick="searchSupport()">Search</button>
+                </div>
+
             </div>
 
             <div class="web-container">
+                <div class="web-alert">
+                    <div><strong>Travel notice:</strong> Allow extra time for evening security screening at JFK Terminal 7.</div>
+                    <div>Updated 7:40 PM ET</div>
+                </div>
+                <div class="support-results" id="supportResults">
+                    <h4 id="supportResultTitle">Search result</h4>
+                    <p id="supportResultText">Helpful information will appear here.</p>
+                </div>
+
                 <div class="info-grid">
                     <div class="info-card">
                         <h4>Contact Support</h4>
@@ -698,10 +2361,18 @@
                 </div>
             </div>
 
+
+            <div class="tag-route-mini"><span>JFK</span><span>• • • ✈ • • •</span><span>LAX</span></div>
+            <div style="width:100%; display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px;">
+                <div style="text-align:left;"><div class="tag-label">PASSENGER</div><div style="font-weight:bold;">A MORGAN</div></div>
+                <div class="tag-qr" aria-label="Demo QR code"></div>
+            </div>
             <div class="barcode"></div>
         </div>
         <div class="print-status" id="print-status-text">Printing Tag...</div>
     </div>
+
+    <div class="demo-ribbon">Interactive concept demo · Station K-14</div>
 
     <div id="toast" class="toast-notification">
         <span>✓</span> <span id="toast-msg">Notification</span>
@@ -726,6 +2397,17 @@
         priority: false
     };
 
+    const WEIGHT_LIMIT = 50;
+    let finalWeight = 0;
+    let selectedMeal = null;
+    let language = 'en';
+    let audioGuidance = false;
+
+    // Additional demo state is attached without changing the original cart model.
+    cart.meal = null;
+    cart.lounge = false;
+
+
     /* --- NAV --- */
     function goToScreen(screenId) {
         // Clear any existing finish timer
@@ -740,10 +2422,14 @@
         }
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
+        updateProgress(screenId);
+        if (audioGuidance) announceScreen(screenId);
+
 
         // Start timer if on finish screen
         if (screenId === 'screen-finish') {
             startFinishTimer();
+            updateFinishSummary();
         }
         
         if (screenId === 'screen-dash') {
@@ -791,12 +2477,47 @@
             prioUpsell.style.display = 'block';
         }
 
+
+        // Meal preference
+        const mealBadge = document.getElementById('meal-badge');
+        const mealCard = document.getElementById('meal-card');
+        if (mealBadge && mealCard) {
+            mealBadge.style.display = cart.meal ? 'block' : 'none';
+            mealCard.classList.toggle('selected', Boolean(cart.meal));
+            document.getElementById('meal-sub').innerText = cart.meal || 'Choose in-flight meal';
+        }
+
+        // Lounge access
+        const loungeBadge = document.getElementById('lounge-badge');
+        const loungeUpsell = document.getElementById('lounge-upsell');
+        const loungeCard = document.getElementById('lounge-card');
+        if (loungeBadge && loungeUpsell && loungeCard) {
+            loungeBadge.style.display = cart.lounge ? 'block' : 'none';
+            loungeUpsell.style.display = cart.lounge ? 'none' : 'block';
+            loungeCard.classList.toggle('selected', Boolean(cart.lounge));
+        }
+
+        const activeSeat = cart.seat || '24F';
+        const dashboardSeat = document.getElementById('dashboard-seat');
+        if (dashboardSeat) dashboardSeat.innerText = activeSeat;
+
+        let total = 0;
+        if (cart.priority) total += 15;
+        if (cart.seat) total += 25;
+        if (cart.lounge) total += 35;
+        cart.bags.forEach(weight => { if (parseFloat(weight) > WEIGHT_LIMIT) total += 50; });
+        const cartTotal = document.getElementById('cart-total');
+        if (cartTotal) cartTotal.innerText = '$' + total.toFixed(2);
         // Summary Line
         const parts = ["Boarding Pass"];
         if(cart.seat) parts[0] += " (" + cart.seat + ")";
         if(cart.priority) parts.push("Priority");
         if(cart.bags.length > 0) parts.push(cart.bags.length + " Bag(s)");
         if(cart.stroller) parts.push("Stroller");
+
+        if(cart.meal) parts.push(cart.meal + " Meal");
+        if(cart.lounge) parts.push("Lounge");
+
         
         document.getElementById('summary-text').innerText = parts.join(", ");
     }
@@ -819,9 +2540,18 @@
     function resetApp() {
         currentTicket = "";
         cart = { bags: [], stroller: false, seat: null, priority: false };
+        cart.meal = null;
+        cart.lounge = false;
+        selectedMeal = null;
+        document.getElementById('ticketHint').classList.remove('visible');
+        const confirmMealBtn = document.getElementById('confirmMealBtn');
+        if (confirmMealBtn) { confirmMealBtn.disabled = true; confirmMealBtn.style.opacity = '0.5'; }
+        document.querySelectorAll('#mealChoices .choice-card').forEach(card => card.classList.remove('active'));
+
         document.getElementById('ticketDisplay').value = "";
         
         // Reset UI visuals
+        document.getElementById('seat-upgrade-btn').classList.remove('is-selected');
         document.getElementById('seat-upgrade-btn').style.background = "var(--k-accent)";
         document.getElementById('seat-upgrade-btn').innerText = "$25";
 
@@ -878,6 +2608,18 @@
             document.getElementById('diagnostic-upload').click();
             return;
         }
+
+        const hint = document.getElementById('ticketHint');
+        const container = document.querySelector('.ticket-input-container');
+        if (currentTicket.length < 3) {
+            hint.classList.add('visible');
+            container.classList.remove('shake');
+            void container.offsetWidth;
+            container.classList.add('shake');
+            return;
+        }
+        hint.classList.remove('visible');
+
         if (currentTicket.length < 3) return; // Add shake validation if needed
         goToScreen('screen-dash');
     }
@@ -919,6 +2661,7 @@
 
     function confirmSeat() { 
         // Visual update for selection
+        document.getElementById('seat-upgrade-btn').classList.add('is-selected');
         document.getElementById('seat-upgrade-btn').style.background = "var(--k-success)";
         document.getElementById('seat-upgrade-btn').innerText = "✓";
         
@@ -952,6 +2695,7 @@
         actions.style.pointerEvents = "none";
         
         let target = 35 + Math.random() * 15;
+        target = 35 + Math.random() * 22; // Expanded demo range to exercise the overweight state.
         let current = 0;
         
         const interval = setInterval(() => {
@@ -1000,6 +2744,181 @@
         goToScreen('screen-dash');
     }
 
+
+
+    /* --- ENHANCED DEMO FEATURES --- */
+    function updateClock() {
+        const clock = document.getElementById('kioskClock');
+        if (!clock) return;
+        clock.innerText = new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date());
+    }
+
+    function updateProgress(screenId) {
+        const identify = document.getElementById('progress-identify');
+        const customize = document.getElementById('progress-customize');
+        const print = document.getElementById('progress-print');
+        if (!identify || !customize || !print) return;
+
+        [identify, customize, print].forEach(step => step.classList.remove('active', 'complete'));
+        const printScreens = ['screen-finish'];
+        const identifyScreens = ['screen-id'];
+        if (identifyScreens.includes(screenId)) {
+            identify.classList.add('active');
+        } else if (printScreens.includes(screenId)) {
+            identify.classList.add('complete');
+            customize.classList.add('complete');
+            print.classList.add('active');
+        } else {
+            identify.classList.add('complete');
+            customize.classList.add('active');
+        }
+    }
+
+    function demoReservation() {
+        currentTicket = '492492';
+        updateDisplay();
+        document.getElementById('ticketHint').classList.remove('visible');
+        showNotification('Demo reservation loaded');
+        setTimeout(submitId, 450);
+    }
+
+    function simulateQrScan() {
+        showNotification('Reading boarding pass…');
+        setTimeout(() => {
+            currentTicket = '492492';
+            updateDisplay();
+            showNotification('Boarding pass recognized');
+            setTimeout(submitId, 350);
+        }, 800);
+    }
+
+    function openMealSelection() {
+        selectedMeal = cart.meal;
+        document.querySelectorAll('#mealChoices .choice-card').forEach(card => {
+            card.classList.toggle('active', card.querySelector('strong').innerText === selectedMeal);
+        });
+        const btn = document.getElementById('confirmMealBtn');
+        btn.disabled = !selectedMeal;
+        btn.style.opacity = selectedMeal ? '1' : '0.5';
+        goToScreen('screen-meal');
+    }
+
+    function chooseMeal(meal, card) {
+        selectedMeal = meal;
+        document.querySelectorAll('#mealChoices .choice-card').forEach(item => item.classList.remove('active'));
+        card.classList.add('active');
+        const btn = document.getElementById('confirmMealBtn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+
+    function confirmMeal() {
+        if (!selectedMeal) return;
+        cart.meal = selectedMeal;
+        showNotification(cart.meal + ' meal selected');
+        goToScreen('screen-dash');
+    }
+
+    function openLounge() {
+        document.getElementById('loungeActionBtn').innerText = cart.lounge ? 'Remove Lounge Access' : 'Add Lounge Access';
+        goToScreen('screen-lounge');
+    }
+
+    function toggleLoungeFromScreen() {
+        cart.lounge = !cart.lounge;
+        showNotification(cart.lounge ? 'Lounge access added' : 'Lounge access removed');
+        goToScreen('screen-dash');
+    }
+
+    function openAccessibility() {
+        goToScreen('screen-accessibility');
+    }
+
+    function closeAccessibility() {
+        goToScreen(previousScreen === 'screen-accessibility' ? 'screen-id' : previousScreen);
+    }
+
+    function toggleAccessSetting(className, control) {
+        const frame = document.getElementById('kioskFrame');
+        const active = frame.classList.toggle(className);
+        control.classList.toggle('on', active);
+        showNotification(active ? 'Accessibility setting enabled' : 'Accessibility setting disabled');
+    }
+
+    function toggleAudioGuidance(control) {
+        audioGuidance = !audioGuidance;
+        control.classList.toggle('on', audioGuidance);
+        showNotification(audioGuidance ? 'Audio guidance demo enabled' : 'Audio guidance demo disabled');
+        if (audioGuidance) announceScreen(document.querySelector('.screen.active').id);
+    }
+
+    function announceScreen(screenId) {
+        const messages = {
+            'screen-id': 'Welcome. Enter your ticket ID or scan a boarding pass.',
+            'screen-dash': 'Services dashboard. Review and customize your itinerary.',
+            'screen-weigh': 'Baggage weigh-in. Place one item on the scale.',
+            'screen-seat': 'Seat selection. Economy Plus seat 4 A is available.',
+            'screen-meal': 'Meal selection. Choose one included meal.',
+            'screen-lounge': 'Skyline Lounge access is available for thirty-five dollars.',
+            'screen-finish': 'Check-in complete. Collect your printed documents.'
+        };
+        if (messages[screenId]) showNotification('Guidance: ' + messages[screenId]);
+    }
+
+    function toggleLanguage() {
+        language = language === 'en' ? 'es' : 'en';
+        const button = document.getElementById('languageBtn');
+        const title = document.querySelector('#screen-id h2');
+        const subtitle = document.querySelector('#screen-id p.subtitle');
+        if (language === 'es') {
+            button.innerText = 'ES / EN';
+            title.innerText = 'Bienvenido de nuevo.';
+            subtitle.innerText = 'Ingrese su ID de boleto de 6 dígitos para acceder a su reservación.';
+            showNotification('Español activado para la pantalla de bienvenida');
+        } else {
+            button.innerText = 'EN / ES';
+            title.innerText = 'Welcome Back.';
+            subtitle.innerText = 'Please enter your 6-digit Ticket ID to access your reservation.';
+            showNotification('English enabled');
+        }
+    }
+
+    function searchSupport() {
+        const input = document.getElementById('supportSearchInput');
+        const results = document.getElementById('supportResults');
+        const title = document.getElementById('supportResultTitle');
+        const text = document.getElementById('supportResultText');
+        const query = input.value.trim().toLowerCase();
+        const answers = [
+            { keys: ['bag', 'baggage', 'weight'], title: 'Baggage allowance', text: 'Your ticket includes one checked bag up to 50 lb. Oversize or overweight items may require an additional fee or agent assistance.' },
+            { keys: ['seat', 'upgrade'], title: 'Seat selection', text: 'Economy+ seats offer additional legroom and earlier boarding. You can change your selection from the kiosk services dashboard.' },
+            { keys: ['refund', 'change'], title: 'Changes and refunds', text: 'Eligibility depends on fare conditions. A Skyline Concierge can review same-day options and any applicable fare difference.' },
+            { keys: ['access', 'wheelchair'], title: 'Accessibility services', text: 'Wheelchair, mobility, hearing, and vision assistance can be requested at the airport. Use the Assistance button to contact a concierge.' }
+        ];
+        const match = answers.find(item => item.keys.some(key => query.includes(key)));
+        title.innerText = match ? match.title : 'Skyline Support';
+        text.innerText = match ? match.text : 'Try searching for baggage, seat upgrades, refunds, or accessibility. A concierge is also available through the kiosk Assistance button.';
+        results.classList.add('visible');
+    }
+
+    function updateFinishSummary() {
+        const seat = cart.seat || '24F';
+        const finishSeat = document.getElementById('finish-seat');
+        const finishGroup = document.getElementById('finish-group');
+        if (finishSeat) finishSeat.innerText = seat;
+        if (finishGroup) finishGroup.innerText = cart.priority ? 'Group 1' : 'Group 4';
+    }
+
+    document.addEventListener('keydown', event => {
+        const activeId = document.querySelector('.screen.active')?.id;
+        if (activeId !== 'screen-id') return;
+        if (/^[0-9]$/.test(event.key)) addNum(event.key);
+        if (event.key === 'Backspace' || event.key === 'Delete') clearNum();
+        if (event.key === 'Enter') submitId();
+    });
+
+    updateClock();
+    setInterval(updateClock, 15000);
     /* --- PRINTING --- */
     function printAll() {
         let queue = [];

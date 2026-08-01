@@ -4,7 +4,7 @@
 
 This directory contains resources for the **Protocol Handler Escape** tactic. This technique demonstrates how to escape a locked-down Linux kiosk browser by exploiting the operating system's default handling of external protocols (such as `mailto:`).
 
-Unlike standard browser exploits, this attack leverages the **Operating System's "User Context."** When a restricted kiosk browser hands off a protocol request to an external application (like a mail client), that secondary application often launches with the privileges of the logged-in user, bypassing the strict containerization (Snap/AppArmor) applied to the browser itself.
+Unlike standard browser exploits, this attack leverages the **Operating System's "User Context."** When a restricted kiosk browser is permitted to hand a protocol request to an external application (like a mail client), that secondary application often launches with the privileges of the logged-in user outside the browser's application sandbox. This uses an allowed desktop-integration path; it does not by itself prove that Snap or AppArmor confinement was bypassed.
 
 **Repo:** [https://github.com/CroodSolutions/CTRL-ESC-HOST](https://github.com/CroodSolutions/CTRL-ESC-HOST)
 
@@ -24,16 +24,16 @@ The success of this escape relies on specific behaviors in Linux Desktop Environ
 
 * **Chromium/Chrome:** Typically hands off protocols like `mailto:` directly to the OS default handler without restriction, making it the primary target for this specific demo.
 * **Firefox:** Often defaults to handling `mailto:` internally (opening a web-based composer) or blocking it in Kiosk mode.
-* *Note:* We use Firefox in this demo for its ease of Kiosk configuration, but the `prepare-kiosk.sh` script forces the OS association to demonstrate the vulnerability common in Chromium-based kiosk deployments.
+* *Note:* We use Firefox in this demo for its ease of Kiosk configuration. The `prepare-kiosk.sh` script installs Thunderbird when needed and checks the OS association. A post-set query mismatch is only a setup note because Firefox still decides whether to delegate `mailto:` links to that handler. Validate the deployed Firefox profile before the workshop.
 
 
 
 ### 2. The Container Gap
 
-Even if the browser is sandboxed (Snap/Flatpak), triggering an external app breaks that containment.
+Even if the browser is sandboxed (Snap/Flatpak), a permitted external-protocol handoff can cross that application boundary.
 
-1. **Browser (Restricted):** Cannot access the file system or run shell commands.
-2. **Protocol Handoff:** Browser tells OS "Open this email address."
+1. **Browser (Restricted):** Its host access is limited by the active sandbox policy and connected interfaces; confinement does not imply that every host file is inaccessible.
+2. **Protocol Handoff:** The browser asks the desktop or a portal to open the email address.
 3. **Mail Client (User Context):** The OS launches Thunderbird. While Thunderbird might also be a Snap package, it runs as the **User**, not the Kiosk Browser service.
 
 ---
@@ -42,20 +42,19 @@ Even if the browser is sandboxed (Snap/Flatpak), triggering an external app brea
 
 ### 1. Configure the Environment
 
-The setup script prepares the machine by installing necessary viewers and configuring the desktop environment.
+The setup script installs the kiosk runtime, configures automatic login, captures the original autostart baseline, and applies the selected GNOME lockdown level.
 
 ```bash
 chmod +x ../prepare-kiosk.sh
-../prepare-kiosk.sh
+../prepare-kiosk.sh --level 2
 
 ```
 
-* **Manual Mode:** Adds "SkyLine Kiosk" to your App Menu and Desktop for testing.
-* **Persistence Mode:** Adds the kiosk to `~/.config/autostart` to launch automatically on login/reboot.
+The script asks whether to reboot after setup only when run from an interactive terminal. A noninteractive invocation skips reboot unless `--reboot` is supplied; use `--no-reboot` to defer it explicitly.
 
 ### 2. Launching the Attack Simulation
 
-If using the manual shortcut, simply click the "SkyLine Kiosk" icon. To launch manually from the terminal:
+The kiosk starts automatically after GDM logs into the configured account. To launch the demo manually during development:
 
 ```bash
 firefox --kiosk "file://$(pwd)/../airline_kiosk.html"
@@ -76,7 +75,7 @@ firefox --kiosk "file://$(pwd)/../airline_kiosk.html"
 * Click the **Email** link.
 
 
-3. **Result:** The browser passes the request to the OS, which launches **Thunderbird** (or the default mail client).
+3. **Expected Result:** If the selected browser delegates `mailto:` links to the OS, the verified association launches **Thunderbird**. Browser settings or policy can instead handle or block the link.
 
 ### Phase 2: The Traversal
 
@@ -91,8 +90,10 @@ We now utilize the legitimate UI of the mail client to spawn a File Manager wind
 
 Because the File Manager was spawned by the Mail Client (which was spawned by the User), it inherits User permissions.
 
-1. In the File Manager window, right-click in any whitespace.
-2. Select **Open in Terminal**.
+The touch workflow requires the kiosk device to have been configured with `--touchscreen`.
+
+1. With a mouse, right-click in any whitespace. On the touch screen, press and hold a folder item until its context menu opens.
+2. With a mouse, select **Open in Terminal**. On the touch screen, select **Open**, then **Open in Console**.
 3. **Result:** You have a terminal shell as the `kiosk` user, breaking out of the browser's restrictions.
 
 ---
@@ -111,7 +112,15 @@ cd ~/.config/autostart/
 
 ```
 
-The `../prepare-kiosk.sh` script demonstrates this by placing the Kiosk launch file here. An attacker would replace or append to this to launch their own payload alongside (or instead of) the Kiosk app.
+The `../prepare-kiosk.sh` script places the kiosk launch file here. An attacker would replace or append to this to launch their own payload alongside (or instead of) the kiosk app.
+
+For workshop recovery, the instructor can press `Ctrl+Alt+Shift+O` to open a terminal and run:
+
+```bash
+kiosk reset
+```
+
+Reset removes the participant-modified autostart directory, restores the first-run baseline, recreates the managed kiosk launcher, and offers to reboot when run from an interactive terminal.
 
 ---
 
