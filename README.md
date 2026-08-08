@@ -1,3 +1,6 @@
+# Looking for DEFCON 34 resources?
+They are here: https://github.com/techspence/Kioskonomicon
+
 # CTRL+ESC+HOST
 
 CTRL+ESC+HOST is a collection of atomic tests to identify and validate escape-to-host flaws, in particular focused on kiosks and presented applications. It is organized into a folder structure including sections to introduce the basics of escaping to host, playbooks for testing kiosks and presented apps, as well as write-ups and walkthroughs of several real-world escape-to-host problems we were able to find and fix using the framework. Finally, there is a section to organize defensive recommendations to reduce the risk associated with kiosks and presented applications.
